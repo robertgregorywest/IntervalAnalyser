@@ -1,6 +1,6 @@
 using Dynastream.Fit;
 
-namespace IntervalAnalyser;
+namespace IntervalAnalyser.Utils;
 
 public class LapFilter(ushort? minAvgPower = null, TimeSpan? targetDuration = null)
 {

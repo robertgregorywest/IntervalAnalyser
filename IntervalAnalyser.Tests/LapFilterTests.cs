@@ -1,4 +1,5 @@
 ﻿using Dynastream.Fit;
+using IntervalAnalyser.Utils;
 
 namespace IntervalAnalyser.Tests;
 

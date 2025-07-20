@@ -1,17 +1,15 @@
-﻿using System.Text;
-using ConsoleTables;
-using Dynastream.Fit;
+﻿using ConsoleTables;
 using IntervalAnalyser;
-using static IntervalAnalyser.IntervalUtilities;
-using File = System.IO.File;
+using IntervalAnalyser.Models;
+using IntervalAnalyser.Services;
+using IntervalAnalyser.Utils;
 
-// if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
-// {
-//     Console.WriteLine("Usage: FitLapViewer <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
-//     return;
-// }
+if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
+{
+    Console.WriteLine("Usage: FitLapViewer <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
+    return;
+}
 
-string? fitFilePath = null;
 ushort? minPower = null;
 TimeSpan? targetDuration = null;
 
@@ -38,102 +36,94 @@ for (int i = 0; i < args.Length; i++)
 
 if (filePaths.Count == 0)
 {
-    // Console.WriteLine("Error: No FIT files specified.");
-    // return;
-    filePaths.Add("../../../../test.fit");
+    Console.WriteLine("Error: No FIT files specified.");
+    return;
 }
 
-// Process each file: collect (power, durationSec) per filtered lap
-var results = new Dictionary<string, List<(double power, double durSec)>>();
 var filter  = new LapFilter(minPower, targetDuration);
+IFitFileProcessor processor = new FitFileProcessor();
 
-foreach (var path in filePaths)
-{
-    if (!File.Exists(path))
-    {
-        Console.WriteLine($"File not found: {path}");
-        return;
-    }
-    using var fitSource = new FileStream(path, FileMode.Open);
-    var decoder = new Decode();
-    var fitListener = new FitListener();
-    decoder.MesgEvent += fitListener.OnMesg;
-    
-    decoder.Read(fitSource);
-    
-    var fitMessages = fitListener.FitMessages;
-    
-    var filtered = fitMessages.LapMesgs.Where(lap => filter.IsMatch(lap)).ToList();
-    
-    var powers = fitMessages.LapMesgs
-        .Where(l => filter.IsMatch(l))
-        .Select(l => (
-            power: (double)l.GetAvgPower().Value,
-            durSec: (double)l.GetTotalElapsedTime().Value
-        ))
-        .ToList();
+// process each file
+var allData = new List<LapData>();
+foreach (var f in filePaths)
+    allData.AddRange(processor.ProcessFile(f, filter));
 
-    results[Path.GetFileName(path)] = powers;
-}
+// 1) Group by file and sort
+var grouped = allData
+    .GroupBy(ld => ld.FileName)
+    .ToDictionary(
+        g => g.Key,
+        g => g.OrderBy(ld => ld.LapIndex).ToList()
+    );
 
-// --- Build table ---
-var allFiles = results.Keys.ToList();
-int maxRows = results.Values.Max(list => list.Count);
+// 2) Determine how many rows we need
+int maxLap = grouped.Values.Max(list => list.Count);
 
+// 3) Create table with header: "Lap", then each file name
 var table = new ConsoleTable();
-table.AddColumn(new[] { "Interval" }.Concat(allFiles).ToArray());
+table.AddColumn(new[] { "Lap" }.Concat(grouped.Keys).ToArray());
 
-for (int row = 0; row < maxRows; row++)
+int col;
+
+// 4) Populate per-lap rows
+for (int lap = 1; lap <= maxLap; lap++)
 {
-    var rowVals = new object[1 + allFiles.Count];
-    rowVals[0] = (row + 1).ToString();
-    for (int c = 0; c < allFiles.Count; c++)
+    var row = new object[1 + grouped.Count];
+    row[0] = lap.ToString();
+    col = 1;
+    foreach (var file in grouped.Keys)
     {
-        var vals = results[allFiles[c]];
-        rowVals[c + 1] = row < vals.Count
-            ? $"{vals[row].power:F0} W"
+        var entry = grouped[file].FirstOrDefault(ld => ld.LapIndex == lap);
+        row[col++] = entry != null
+            ? $"{entry.AvgPower:F0} W"
             : "";
     }
-    table.AddRow(rowVals);
+    table.AddRow(row);
 }
 
-// --- Summary rows ---
-
-// 1) Average Power
-var avgRow = new object[1 + allFiles.Count];
+// 5) Summary row: Average Power
+var avgRow = new object[1 + grouped.Count];
 avgRow[0] = "Avg";
-for (int c = 0; c < allFiles.Count; c++)
+col = 1;
+foreach (var list in grouped.Values)
 {
-    var list = results[allFiles[c]];
-    avgRow[c + 1] = list.Count > 0
-        ? $"{list.Average(x => x.power):F0} W"
+    avgRow[col++] = list.Any()
+        ? $"{list.Average(ld => ld.AvgPower):F0} W"
         : "";
 }
 table.AddRow(avgRow);
 
-// 2) Total Duration
-var durRow = new object[1 + allFiles.Count];
+// 6) Summary row: Total Duration
+var durRow = new object[1 + grouped.Count];
 durRow[0] = "Total Dur";
-for (int c = 0; c < allFiles.Count; c++)
+col = 1;
+foreach (var list in grouped.Values)
 {
-    var list = results[allFiles[c]];
-    durRow[c + 1] = list.Count > 0
-        ? CalculateTotalDuration(list).ToString(@"hh\:mm\:ss")
-        : "";
+    if (list.Any())
+    {
+        var totalSec = list.Sum(ld => ld.DurationSec);
+        durRow[col++] = TimeSpan.FromSeconds(totalSec).ToString(@"hh\:mm\:ss");
+    }
+    else durRow[col++] = "";
 }
 table.AddRow(durRow);
 
-// 3) Normalized Power
-var npRow = new object[1 + allFiles.Count];
+// 7) Summary row: Normalized Power
+var npRow = new object[1 + grouped.Count];
 npRow[0] = "Norm Pwr";
-for (int c = 0; c < allFiles.Count; c++)
+col = 1;
+foreach (var list in grouped.Values)
 {
-    var list = results[allFiles[c]];
-    npRow[c + 1] = list.Count > 0
-        ? $"{ (int)Math.Round(CalculateNormalizedPower(list)) } W"
-        : "";
+    if (list.Any())
+    {
+        var totalSec = list.Sum(ld => ld.DurationSec);
+        var sum4     = list.Sum(ld => Math.Pow(ld.AvgPower, 4) * ld.DurationSec);
+        var np       = Math.Pow(sum4 / totalSec, 0.25);
+        npRow[col++] = $"{(int)Math.Round(np)} W";
+    }
+    else npRow[col++] = "";
 }
 table.AddRow(npRow);
 
-// --- Render ---
+// 8) Render to console
 table.Write(Format.Alternative);
