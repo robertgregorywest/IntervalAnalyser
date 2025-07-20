@@ -1,61 +1,35 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using Dynastream.Fit;
 
-using Dynastream.Fit;
-using static IntervalAnalyser.Decoder;
+var fitFilePath = args.Length != 1 ? "../../../../test.fit" : args[0];
 
-var fileName = args.Length != 1 ? "../../../../test.fit" : args[0];
-
-FileStream fitSource = null;
+FileStream? fitSource = null;
     try
     {
-        fitSource = new FileStream(fileName, FileMode.Open);
-        //Console.WriteLine("Opening {0}", fileName);
+        fitSource = new FileStream(fitFilePath, FileMode.Open);
 
-        var decodeDemo = new Decode();
-
-        // Use a FitListener to capture all decoded messages in a FitMessages object
+        var decoder = new Decode();
         var fitListener = new FitListener();
-        decodeDemo.MesgEvent += fitListener.OnMesg;
+        decoder.MesgEvent += fitListener.OnMesg;
 
-        // Use a custom event handlers to process messages as they are being decoded, and to
-        // capture message definitions and developer field definitions
-        decodeDemo.MesgEvent += OnMesgCustom;
-        decodeDemo.MesgDefinitionEvent += OnMesgDefinitionCustom;
-        decodeDemo.DeveloperFieldDescriptionEvent += OnDeveloperFieldDescriptionCustom;
+        decoder.Read(fitSource);
 
-        // Use a MesgBroadcaster for easy integration with existing projects
-        //MesgBroadcaster mesgBroadcaster = new MesgBroadcaster();
-        //mesgBroadcaster.MesgEvent += OnMesgCustom;
-        //mesgBroadcaster.MesgDefinitionEvent += OnMesgDefinitionCustom;
-        //decodeDemo.MesgEvent += mesgBroadcaster.OnMesg;
-        //decodeDemo.MesgDefinitionEvent += mesgBroadcaster.OnMesgDefinition;
+        var fitMessages = fitListener.FitMessages;
 
-        Console.WriteLine("Decoding...");
-        decodeDemo.Read(fitSource);
+        for (var i = 0; i < fitMessages.LapMesgs.Count; i++)
+        {
+            var lap = fitMessages.LapMesgs[i];
+            
+            var avgPower = lap.GetAvgPower();
+            
+            var elapsed = lap.GetTotalElapsedTime();
+            var duration = elapsed.HasValue
+                ? TimeSpan.FromSeconds(elapsed.Value)
+                : TimeSpan.Zero;
 
-        FitMessages fitMessages = fitListener.FitMessages;
-
-        foreach (FileIdMesg mesg in fitMessages.FileIdMesgs)
-        {
-            PrintFileIdMesg(mesg);
+            Console.WriteLine(
+                $@"  Lap {i + 1}: Avg Power = {(avgPower.HasValue ? avgPower.Value.ToString() : "N/A")} W, Duration = {duration:hh\:mm\:ss}"
+            );
         }
-        foreach (UserProfileMesg mesg in fitMessages.UserProfileMesgs)
-        {
-            PrintUserProfileMesg(mesg);
-        }
-        foreach (DeviceInfoMesg mesg in fitMessages.DeviceInfoMesgs)
-        {
-            PrintDeviceInfoMesg(mesg);
-        }
-        foreach (MonitoringMesg mesg in fitMessages.MonitoringMesgs)
-        {
-            PrintMonitoringMesg(mesg);
-        }
-        foreach (RecordMesg mesg in fitMessages.RecordMesgs)
-        {
-            PrintRecordMesg(mesg);
-        }
-        Console.WriteLine("Decoded FIT file {0}", args[0]);
 
         Console.Write("Press any key to continue...");
         Console.ReadKey();
