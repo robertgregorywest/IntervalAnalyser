@@ -101,8 +101,7 @@ foreach (var list in grouped.Values)
 {
     if (list.Any())
     {
-        var totalSec = list.Sum(ld => ld.DurationSec);
-        durRow[col++] = TimeSpan.FromSeconds(totalSec).ToString(@"hh\:mm\:ss");
+        durRow[col++] = LapDataUtilities.CalculateTotalDuration(list);
     }
     else durRow[col++] = "";
 }
@@ -116,9 +115,7 @@ foreach (var list in grouped.Values)
 {
     if (list.Any())
     {
-        var totalSec = list.Sum(ld => ld.DurationSec);
-        var sum4     = list.Sum(ld => Math.Pow(ld.AvgPower, 4) * ld.DurationSec);
-        var np       = Math.Pow(sum4 / totalSec, 0.25);
+        var np = LapDataUtilities.CalculateNormalizedPower(list);
         npRow[col++] = $"{(int)Math.Round(np)} W";
     }
     else npRow[col++] = "";
