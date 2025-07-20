@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ConsoleTables" Version="2.7.0" />
       <PackageReference Include="Garmin.FIT.Sdk" Version="21.171.0" />
     </ItemGroup>
 
