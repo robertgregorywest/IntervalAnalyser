@@ -5,13 +5,13 @@ A .NET 9 console application for processing Garmin FIT files to extract and dis
 ## Features
 
 - **FIT File Parsing**: Uses the [Garmin.FIT.sdk](https://www.nuget.org/packages/Garmin.FIT.sdk) to decode `.fit` files and extract `LapMesg` records.
-- **Filtering**: Filter laps by minimum average power (default > 250 W if not specified) and/or target duration (within ± 2 seconds).
-- **Multi-File Support**: Pass multiple FIT files, each displayed as its own column in the output table.
-- **ConsoleTable Output**: Neatly formats per-lap data and summary rows (average power, total duration, normalized power) using [ConsoleTables](https://www.nuget.org/packages/ConsoleTables).
+- **Filtering**: Filter laps by minimum average power (default > 250 W if not specified) and/or target duration (within ± 2 seconds).
+- **Multi-File & Folder Support**: Pass multiple FIT files and/or folders (all `.fit` files in each folder are included), each displayed as its own column in the output table.
+- **Spectre.Console Output**: Neatly formats per-lap data and summary rows (average power, total duration, normalized power) using [Spectre.Console](https://spectreconsole.net/).
 
 ## Requirements
 
-- .NET 9 SDK
+- .NET 9 SDK
 
 ## Solution Structure
 
@@ -22,6 +22,8 @@ IntervalAnalyser/
 ├─ Models/
 │   └─ LapData.cs          # DTO: FileName, LapIndex, AvgPower, DurationSec
 ├─ Utils/
+│   ├─ LapDataUtilities.cs # Helper for summarising lap data
+│   ├─ TableExtensions.cs  # Extension methods for Spectre Console Tables
 │   └─ LapFilter.cs        # Lap filtering logic
 ├─ Services/
 │   ├─ IFitFileProcessor.cs
@@ -58,11 +60,14 @@ IntervalAnalyser/
    **Examples**:
 
    ```bash
-   # Single file, default filter (>250 W)
+   # Single file, default filter (>250 W)
    dotnet run --project IntervalAnalyser ride1.fit
 
    # Multiple files with explicit minPower and duration
    dotnet run --project IntervalAnalyser ride1.fit ride2.fit --minPower 200 --targetDuration 00:03:30
+   
+   # All .fit files in a folder with explicit minPower and duration
+   dotnet run --project IntervalAnalyser rides_folder --minPower 200 --targetDuration 00:03:30
    ```
 
 ## Testing

@@ -32,7 +32,19 @@ try
         }
         else if (!a.StartsWith("--"))
         {
-            filePaths.Add(a);
+            if (File.Exists(a))
+            {
+                filePaths.Add(a);
+            }
+            else if (Directory.Exists(a))
+            {
+                var fitFiles = Directory.GetFiles(a, "*.fit", SearchOption.TopDirectoryOnly);
+                filePaths.AddRange(fitFiles);
+            }
+            else
+            {
+                Console.WriteLine($"Warning: Path not found: {a}");
+            }
         }
     }
 
