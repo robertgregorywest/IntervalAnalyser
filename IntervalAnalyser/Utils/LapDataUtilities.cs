@@ -18,17 +18,17 @@ public static class LapDataUtilities
         if (laps.Count == 0)
             return string.Empty;
         var duration = CalculateTotalDuration(laps);
-        return duration.ToString(@"hh\:mm\:ss");
+        return duration.ToString(@"mm\:ss");
     }
     
     /// <summary>
-    /// Computes normalized power from a collection of LapData:
+    /// Computes normalized power to nearest Watt from a collection of LapData:
     ///   NP = ( sum(p_i^4 * d_i) / sum(d_i) )^(1/4)
     /// </summary>
-    public static double CalculateNormalizedPower(IEnumerable<LapData> laps)
+    public static int CalculateNormalizedPower(IEnumerable<LapData> laps)
     {
         var totalSec = laps.Sum(x => x.DurationSec);
         var sum4 = laps.Sum(x => Math.Pow(x.AvgPower, 4) * x.DurationSec);
-        return Math.Pow(sum4 / totalSec, 0.25);
+        return (int)Math.Round(Math.Pow(sum4 / totalSec, 0.25));
     }
 }

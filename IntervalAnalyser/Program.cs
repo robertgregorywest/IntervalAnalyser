@@ -17,7 +17,7 @@ try
 
     var filePaths = new List<string>();
 
-    for (int i = 0; i < args.Length; i++)
+    for (var i = 0; i < args.Length; i++)
     {
         var a = args[i];
         if (a.StartsWith("--minPower", StringComparison.OrdinalIgnoreCase))
@@ -59,7 +59,7 @@ try
         );
 
     // 2) Determine how many rows we need
-    int maxLap = grouped.Values.Max(list => list.Count);
+    var maxLap = grouped.Values.Max(list => list.Count);
 
     // 3) Create table with header: "Lap", then each file name
     var table = new Table();
@@ -69,7 +69,7 @@ try
         table.AddColumn(file);
 
     // 4) Populate per-lap rows
-    for (int lap = 1; lap <= maxLap; lap++)
+    for (var lap = 1; lap <= maxLap; lap++)
     {
         var row = new List<string> { lap.ToString() };
         foreach (var file in grouped.Keys)
@@ -79,30 +79,33 @@ try
         }
         table.AddRow(row.ToArray());
     }
+    
+    table.AddEmptyRow();
 
     // 5) Summary row: Average Power
-    var avgRow = new List<string> { "Avg" };
+    var avgRow = new List<string>();
     foreach (var list in grouped.Values)
-        avgRow.Add(list.Any() ? $"{list.Average(ld => ld.AvgPower):F0} W" : "");
-    table.AddRow(avgRow.ToArray());
+        avgRow.Add(list.Count != 0 ? $"{list.Average(ld => ld.AvgPower):F0} W" : "");
+    table.AddSummaryRow("Avg", avgRow.ToArray());
 
     // 6) Summary row: Total Duration
-    var durRow = new List<string> { "Total Dur" };
+    var durRow = new List<string>();
     foreach (var list in grouped.Values)
         durRow.Add(LapDataUtilities.FormatTotalDuration(list));
-    table.AddRow(durRow.ToArray());
+    table.AddSummaryRow("Total Dur", durRow.ToArray());
 
-    var npRow = new List<string> { "Norm Pwr" };
+    // 7) Summary row: Normalized Power
+    var npRow = new List<string>();
     foreach (var list in grouped.Values)
     {
-        if (list.Any())
+        if (list.Count != 0)
         {
             var np = LapDataUtilities.CalculateNormalizedPower(list);
-            npRow.Add($"{(int)Math.Round(np)} W");
+            npRow.Add($"{np} W");
         }
         else npRow.Add("");
     }
-    table.AddRow(npRow.ToArray());
+    table.AddSummaryRow("Norm Pwr", npRow.ToArray());
 
     // 8) Render to console
     AnsiConsole.Write(table);
