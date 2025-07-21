@@ -7,10 +7,18 @@ public static class LapDataUtilities
     /// <summary>
     /// Sums durations (in seconds) and returns a TimeSpan.
     /// </summary>
-    public static TimeSpan CalculateTotalDuration(IEnumerable<LapData> laps)
+    private static TimeSpan CalculateTotalDuration(IEnumerable<LapData> laps)
     {
         var totalSec = laps.Sum(x => x.DurationSec);
         return TimeSpan.FromSeconds(totalSec);
+    }
+    
+    public static string FormatTotalDuration(List<LapData> laps)
+    {
+        if (laps.Count == 0)
+            return string.Empty;
+        var duration = CalculateTotalDuration(laps);
+        return duration.ToString(@"hh\:mm\:ss");
     }
     
     /// <summary>
