@@ -1,6 +1,6 @@
-# IntervalAnalyser
+# Interval Analyser
 
-A .NET 9 console application for processing Garmin FIT files to extract and display lap data with average power and durations, supporting filtering, multi-file comparison, and summary statistics.
+A .NET 9 console application for processing Garmin FIT files to extract and display lap data with average power and durations, supporting filtering, multi-file comparison, and summary statistics.
 
 ## Features
 
