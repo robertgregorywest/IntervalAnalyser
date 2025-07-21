@@ -2,7 +2,10 @@ using IntervalAnalyser.Models;
 
 namespace IntervalAnalyser.Utils;
 
-public static class LapDataUtilities
+/// <summary>
+/// Provides utility methods for performing calculations and formatting related to lap data.
+/// </summary>
+public static class LapDataCalculator
 {
     /// <summary>
     /// Sums durations (in seconds) and returns a TimeSpan.
@@ -13,7 +16,12 @@ public static class LapDataUtilities
         return TimeSpan.FromSeconds(totalSec);
     }
     
-    public static string FormatTotalDuration(List<LapData> laps)
+    /// <summary>
+    /// Sums durations of all laps and returns as a string in "mm:ss" format.
+    /// </summary>
+    /// <param name="laps">A list of <see cref="LapData"/> objects representing laps.</param>
+    /// <returns>A formatted string representing the total duration, or an empty string if no laps are provided.</returns>
+    public static string CaluclateTotalDuration(List<LapData> laps)
     {
         if (laps.Count == 0)
             return string.Empty;

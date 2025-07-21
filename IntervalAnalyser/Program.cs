@@ -13,18 +13,19 @@ try
     if (args.Length == 0 || parseResult.ShowHelp)
     {
         AnsiConsole.MarkupLine("[bold]Usage:[/] IntervalAnalyser <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
-        return;
+        Environment.Exit(0);
     }
 
-    if (parseResult.FilePaths.Count == 0)
+    var filePaths = new HashSet<string>(parseResult.FilePaths, StringComparer.OrdinalIgnoreCase);
+    
+    if (filePaths.Count == 0)
     {
         AnsiConsole.MarkupLine("[red]Error: No FIT files specified.[/]");
-        return;
+        Environment.Exit(0);
     }
 
-    ushort? minPower = parseResult.MinPower;
-    TimeSpan? targetDuration = parseResult.TargetDuration;
-    var filePaths = parseResult.FilePaths;
+    var minPower = parseResult.MinPower;
+    var targetDuration = parseResult.TargetDuration;
 
     var filter = new LapFilter(minPower, targetDuration);
     IFitFileProcessor processor = new FitFileProcessor();
@@ -75,7 +76,7 @@ try
     // 6) Summary row: Total Duration
     var durRow = new List<string>();
     foreach (var list in grouped.Values)
-        durRow.Add(LapDataUtilities.FormatTotalDuration(list));
+        durRow.Add(LapDataCalculator.CaluclateTotalDuration(list));
     table.AddSummaryRow("Total Dur", durRow.ToArray());
 
     // 7) Summary row: Normalized Power
@@ -84,7 +85,7 @@ try
     {
         if (list.Count != 0)
         {
-            var np = LapDataUtilities.CalculateNormalizedPower(list);
+            var np = LapDataCalculator.CalculateNormalizedPower(list);
             npRow.Add($"{np} W");
         }
         else npRow.Add("");
