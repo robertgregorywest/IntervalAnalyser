@@ -2,7 +2,7 @@ using IntervalAnalyser.Models;
 
 namespace IntervalAnalyser.Utils;
 
-public class LapDataUtilities
+public static class LapDataUtilities
 {
     /// <summary>
     /// Sums durations (in seconds) and returns a TimeSpan.
@@ -19,9 +19,8 @@ public class LapDataUtilities
     /// </summary>
     public static double CalculateNormalizedPower(IEnumerable<LapData> laps)
     {
-        double totalSec = laps.Sum(x => x.DurationSec);
-        double sum4 = laps.Sum(x => Math.Pow(x.AvgPower, 4) * x.DurationSec);
+        var totalSec = laps.Sum(x => x.DurationSec);
+        var sum4 = laps.Sum(x => Math.Pow(x.AvgPower, 4) * x.DurationSec);
         return Math.Pow(sum4 / totalSec, 0.25);
     }
-
 }

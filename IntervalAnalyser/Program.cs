@@ -1,5 +1,4 @@
 ﻿using ConsoleTables;
-using IntervalAnalyser;
 using IntervalAnalyser.Models;
 using IntervalAnalyser.Services;
 using IntervalAnalyser.Utils;
@@ -61,7 +60,7 @@ int maxLap = grouped.Values.Max(list => list.Count);
 
 // 3) Create table with header: "Lap", then each file name
 var table = new ConsoleTable();
-table.AddColumn(new[] { "Lap" }.Concat(grouped.Keys).ToArray());
+table.AddColumn(new[] { "Interval" }.Concat(grouped.Keys).ToArray());
 
 int col;
 
