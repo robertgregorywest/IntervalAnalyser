@@ -52,17 +52,17 @@ IntervalAnalyser/
 3. **Run the app**
 
    ```bash
-   dotnet run --project IntervalAnalyser -- <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]
+   dotnet run --project IntervalAnalyser <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]
    ```
 
    **Examples**:
 
    ```bash
    # Single file, default filter (>250 W)
-   dotnet run --project IntervalAnalyser -- ride1.fit
+   dotnet run --project IntervalAnalyser ride1.fit
 
    # Multiple files with explicit minPower and duration
-   dotnet run --project IntervalAnalyser -- ride1.fit ride2.fit --minPower 200 --targetDuration 00:03:30
+   dotnet run --project IntervalAnalyser ride1.fit ride2.fit --minPower 200 --targetDuration 00:03:30
    ```
 
 ## Testing
