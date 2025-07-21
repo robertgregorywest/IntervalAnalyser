@@ -5,54 +5,26 @@ using IntervalAnalyser.Utils;
 
 try
 {
-    if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
+    var parseResult = ArgumentParser.Parse(args);
+
+    foreach (var warning in parseResult.Warnings)
+        AnsiConsole.MarkupLine($"[yellow]{warning}[/]");
+
+    if (args.Length == 0 || parseResult.ShowHelp)
     {
-        Console.WriteLine(
-            "Usage: FitLapViewer <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
+        AnsiConsole.MarkupLine("[bold]Usage:[/] IntervalAnalyser <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
         return;
     }
 
-    ushort? minPower = null;
-    TimeSpan? targetDuration = null;
-
-    var filePaths = new List<string>();
-
-    for (var i = 0; i < args.Length; i++)
+    if (parseResult.FilePaths.Count == 0)
     {
-        var a = args[i];
-        if (a.StartsWith("--minPower", StringComparison.OrdinalIgnoreCase))
-        {
-            var val = a.Contains('=') ? a.Split('=', 2)[1] : args[++i];
-            if (ushort.TryParse(val, out var p)) minPower = p;
-        }
-        else if (a.StartsWith("--targetDuration", StringComparison.OrdinalIgnoreCase))
-        {
-            var val = a.Contains('=') ? a.Split('=', 2)[1] : args[++i];
-            if (TimeSpan.TryParse(val, out var d)) targetDuration = d;
-        }
-        else if (!a.StartsWith("--"))
-        {
-            if (File.Exists(a))
-            {
-                filePaths.Add(a);
-            }
-            else if (Directory.Exists(a))
-            {
-                var fitFiles = Directory.GetFiles(a, "*.fit", SearchOption.TopDirectoryOnly);
-                filePaths.AddRange(fitFiles);
-            }
-            else
-            {
-                Console.WriteLine($"Warning: Path not found: {a}");
-            }
-        }
-    }
-
-    if (filePaths.Count == 0)
-    {
-        Console.WriteLine("Error: No FIT files specified.");
+        AnsiConsole.MarkupLine("[red]Error: No FIT files specified.[/]");
         return;
     }
+
+    ushort? minPower = parseResult.MinPower;
+    TimeSpan? targetDuration = parseResult.TargetDuration;
+    var filePaths = parseResult.FilePaths;
 
     var filter = new LapFilter(minPower, targetDuration);
     IFitFileProcessor processor = new FitFileProcessor();
