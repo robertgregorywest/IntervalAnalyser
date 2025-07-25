@@ -28,7 +28,7 @@ try
     var targetDuration = parseResult.TargetDuration;
 
     var filter = new LapFilter(minPower, targetDuration);
-    IFitFileProcessor processor = new FitFileProcessor();
+    var processor = new FitFileProcessor();
 
     // Process each file
     var allData = new List<LapData>();
@@ -76,23 +76,10 @@ try
     // 6) Summary row: Total Duration
     var durRow = new List<string>();
     foreach (var list in grouped.Values)
-        durRow.Add(LapDataCalculator.CaluclateTotalDuration(list));
+        durRow.Add(LapDataCalculator.CalculateTotalDuration(list));
     table.AddSummaryRow("Total Dur", durRow.ToArray());
-
-    // 7) Summary row: Normalized Power
-    var npRow = new List<string>();
-    foreach (var list in grouped.Values)
-    {
-        if (list.Count != 0)
-        {
-            var np = LapDataCalculator.CalculateNormalizedPower(list);
-            npRow.Add($"{np} W");
-        }
-        else npRow.Add("");
-    }
-    table.AddSummaryRow("Norm Pwr", npRow.ToArray());
-
-    // 8) Render to console
+    
+    // 7) Render to console
     AnsiConsole.Write(table);
 }
 catch (Exception ex)

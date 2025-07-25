@@ -21,11 +21,11 @@ public static class LapDataCalculator
     /// </summary>
     /// <param name="laps">A list of <see cref="LapData"/> objects representing laps.</param>
     /// <returns>A formatted string representing the total duration, or an empty string if no laps are provided.</returns>
-    public static string CaluclateTotalDuration(List<LapData> laps)
+    public static string CalculateTotalDuration(List<LapData> laps)
     {
         if (laps.Count == 0)
             return string.Empty;
-        var duration = CalculateTotalDuration(laps);
+        var duration = CalculateTotalDuration((IEnumerable<LapData>)laps);
         return duration.ToString(@"mm\:ss");
     }
     
