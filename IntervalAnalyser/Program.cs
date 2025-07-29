@@ -10,9 +10,9 @@ try
     foreach (var warning in parseResult.Warnings)
         AnsiConsole.MarkupLine($"[yellow]{warning}[/]");
 
-    if (args.Length == 0 || parseResult.ShowHelp)
+    if (parseResult.ShowHelp)
     {
-        AnsiConsole.MarkupLine("[bold]Usage:[/] IntervalAnalyser <file1.fit> [file2.fit ...] [--minPower <watts>] [--targetDuration <hh:mm:ss>]");
+        AnsiConsole.MarkupLine("[bold]Usage:[/] IntervalAnalyser <file1.fit> [[file2.fit ...]] [[--minPower <watts>]] [[--targetDuration <hh:mm:ss>]]");
         Environment.Exit(0);
     }
 

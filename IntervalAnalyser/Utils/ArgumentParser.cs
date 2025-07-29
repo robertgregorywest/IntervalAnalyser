@@ -8,6 +8,12 @@ public static class ArgumentParser
     {
         var result = new ArgumentParserResult();
 
+        if (args.Length == 0)
+        {
+            result.ShowHelp = true;
+            return result;
+        }
+        
         for (var i = 0; i < args.Length; i++)
         {
             var a = args[i];
