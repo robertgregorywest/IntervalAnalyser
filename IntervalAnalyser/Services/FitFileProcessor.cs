@@ -38,7 +38,7 @@ public class FitFileProcessor : IFitFileProcessor
             if (!filter.IsMatch(lapMesg)) continue;
             
             var avgPower = lapMesg.GetAvgPower();
-            var duration = lapMesg.GetTotalElapsedTime();
+            var duration = lapMesg.GetTotalTimerTime();
             if (avgPower == null || duration == null)
                 continue;
             

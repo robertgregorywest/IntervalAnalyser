@@ -33,7 +33,7 @@ public class LapFilter(ushort? minAvgPower = null, TimeSpan? targetDuration = nu
         // Check duration
         if (!TargetDuration.HasValue) return true;
         
-        var t = lap.GetTotalElapsedTime();
+        var t = lap.GetTotalTimerTime();
         if (!t.HasValue)
             return false;
 
